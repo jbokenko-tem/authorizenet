@@ -1,5 +1,162 @@
+<!DOCTYPE html>
 <html>
-<body bgcolor="#CCFFFF">
-<h2>Quick Test</h2>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script>
+$(document).ready(function(){
+  $("#hide").click(function(){
+    $("p").hide();
+  });
+  $("#show").click(function(){
+    $("p").show();
+  });
+  $("#btnOpenAuthorizeNetIFrame").click(function () {
+    $("#add_payment").show();
+    $("#send_token").attr({ "action": "https://test.authorize.net/payment/payment", "target": "add_payment" }).submit();
+    $(window).scrollTop($('#add_payment').offset().top - 50);
+  });
+  
+});
+
+document.addEventListener("message", myFunction);
+
+function myFunction () {
+	alert ("inside myFunction")
+	}
+
+
+				function getToken() {
+					var url_base = 'https://apitest.authorize.net/xml/v1/request.api'
+					var requestBody =
+						{
+							"getHostedPaymentPageRequest": {
+								"merchantAuthentication": {
+									"name": "9g65X6Eq4Ux",
+									"transactionKey": "4294amD6G2s3RtHQ"
+								},
+								"transactionRequest": {
+									"transactionType": "authCaptureTransaction",
+									"amount": "250.00",
+									"profile": {
+										"customerProfileId": "123456789"
+									},
+									"customer": {
+										"email": "ellen@mail.com"
+									},
+									"billTo": {
+										"firstName": "Ellen",
+										"lastName": "Johnson",
+										"company": "Souveniropolis",
+										"address": "14 Main Street",
+										"city": "Pecan Springs",
+										"state": "TX",
+										"zip": "44628",
+										"country": "USA"
+									}
+								},
+								"hostedPaymentSettings": {
+									"setting": [{
+										"settingName": "hostedPaymentReturnOptions",
+                                        "settingValue": "{\"showReceipt\": false, \"url\": \"https://jbokenko-tem.github.io/authorizenet\", \"urlText\": \"Continue\", \"cancelUrl\": \"https://jbokenko-tem.github.io/authorizenet\", \"cancelUrlText\": \"Cancel\"}"
+									}, {
+										"settingName": "hostedPaymentButtonOptions",
+										"settingValue": "{\"text\": \"Pay\"}"
+									}, {
+										"settingName": "hostedPaymentStyleOptions",
+										"settingValue": "{\"bgColor\": \"blue\"}"
+									}, {
+										"settingName": "hostedPaymentPaymentOptions",
+										"settingValue": "{\"cardCodeRequired\": false, \"showCreditCard\": true, \"showBankAccount\": true}"
+									}, {
+										"settingName": "hostedPaymentSecurityOptions",
+										"settingValue": "{\"captcha\": false}"
+									}, {
+										"settingName": "hostedPaymentShippingAddressOptions",
+										"settingValue": "{\"show\": false, \"required\": false}"
+									}, {
+										"settingName": "hostedPaymentBillingAddressOptions",
+										"settingValue": "{\"show\": true, \"required\": false}"
+									}, {
+										"settingName": "hostedPaymentCustomerOptions",
+										"settingValue": "{\"showEmail\": true, \"requiredEmail\": true, \"addPaymentProfile\": true}"
+									}, {
+										"settingName": "hostedPaymentOrderOptions",
+										"settingValue": "{\"show\": true, \"merchantName\": \"G and S Questions Inc.\"}"
+									}, {
+										"settingName": "hostedPaymentIFrameCommunicatorUrl",
+										"settingValue": "{\"url\": \"https://jbokenko-tem.github.io/authorizenet\"}"
+									}]
+								}
+							}
+						}
+					$.ajax({
+						'url': url_base,
+						'type': 'POST',
+						'content-Type': 'x-www-form-urlencoded',
+						'dataType': 'json',
+						'data': JSON.stringify(requestBody),
+						'success': function (result) {
+							$("#token").val(result.token);
+						}
+					});
+				}
+				
+				
+
+</script>
+
+
+
+​
+​</head>
+<body onload="getToken()">
+   <style>
+      .button {
+         background-color: #4CAF50;
+         /* Green */
+         border: none;
+         color: white;
+         padding: 15px 32px;
+         text-align: center;
+         text-decoration: none;
+         display: inline-block;
+         font-size: 16px;
+         margin: 4px 2px;
+         cursor: pointer;
+         -webkit-transition-duration: 0.4s;
+         /* Safari */
+         transition-duration: 0.4s;
+      }
+​
+      .button-1 {
+         box-shadow: 0 8px 16px 0 rgba(19, 128, 33, 0.61), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+      }
+   </style>
+
+   <div>
+      <center>
+         <button id="btnOpenAuthorizeNetIFrame" class="button button-1" onclick='getToken()'>Show Payment Form</button>
+      </center>
+   </div>
+   <center>
+      <div id="iframe_holder" class="center-block" height="444" style="width:90%;max-width: 1000px">
+         <iframe id="add_payment" class="embed-responsive-item panel" name="add_payment" height="777" width="100%" frameborder="1" scrolling="yes"
+          hidden="true">
+         </iframe>
+      </div>
+   </center>
+   <form id="send_token" action="" method="post" target="add_payment">
+      <input type="hidden" id="token" name="token" value="" />
+   </form>
+
+
+
+<!--
+<p>If you click on the "Hide" button, I will disappear.</p>
+
+<button id="hide">Hide</button>
+<button id="show">Show</button>
+-->
+
 </body>
 </html>
