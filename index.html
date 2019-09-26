@@ -1,116 +1,172 @@
 <!DOCTYPE html>
 <html>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+
 <head>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-<script>
-$(document).ready(function(){
-  $("#hide").click(function(){
-    $("p").hide();
-  });
-  $("#show").click(function(){
-    $("p").show();
-  });
-  $("#btnOpenAuthorizeNetIFrame").click(function () {
-    $("#add_payment").show();
-    $("#send_token").attr({ "action": "https://test.authorize.net/payment/payment", "target": "add_payment" }).submit();
-    $(window).scrollTop($('#add_payment').offset().top - 50);
-  });
-  
-});
+   <title>HostedPayment Test Page</title>
+   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+      <script type="text/javascript">
+            function getToken() {
+               var url_base = 'https://apitest.authorize.net/xml/v1/request.api'
+               var requestBody =
+                  {
+                     "getHostedPaymentPageRequest": {
+                        "merchantAuthentication": {
+                           "name": "9g65X6Eq4Ux",
+                           "transactionKey": "4294amD6G2s3RtHQ"
+                        },
+                        "transactionRequest": {
+                           "transactionType": "authCaptureTransaction",
+                           "amount": "250.00",
+                           "profile": {
+                              "customerProfileId": "123456789"
+                           },
+                           "customer": {
+                              "email": "ellen@mail.com"
+                           },
+                           "billTo": {
+                              "firstName": "Ellen",
+                              "lastName": "Johnson",
+                              "company": "Souveniropolis",
+                              "address": "14 Main Street",
+                              "city": "Pecan Springs",
+                              "state": "TX",
+                              "zip": "44628",
+                              "country": "USA"
+                           }
+                        },
+                        "hostedPaymentSettings": {
+                           "setting": [{
+                              "settingName": "hostedPaymentReturnOptions",
+                              "settingValue": "{\"showReceipt\": false, \"url\": \"https://jbokenko-tem.github.io/authorizenet\", \"urlText\": \"Continue\", \"cancelUrl\": \"https://jbokenko-tem.github.io/authorizenet\", \"cancelUrlText\": \"Cancel\"}"
+                           }, {
+                              "settingName": "hostedPaymentButtonOptions",
+                              "settingValue": "{\"text\": \"Pay\"}"
+                           }, {
+                              "settingName": "hostedPaymentStyleOptions",
+                              "settingValue": "{\"bgColor\": \"blue\"}"
+                           }, {
+                              "settingName": "hostedPaymentPaymentOptions",
+                              "settingValue": "{\"cardCodeRequired\": false, \"showCreditCard\": true, \"showBankAccount\": false}"
+                           }, {
+                              "settingName": "hostedPaymentSecurityOptions",
+                              "settingValue": "{\"captcha\": false}"
+                           }, {
+                              "settingName": "hostedPaymentShippingAddressOptions",
+                              "settingValue": "{\"show\": false, \"required\": false}"
+                           }, {
+                              "settingName": "hostedPaymentBillingAddressOptions",
+                              "settingValue": "{\"show\": true, \"required\": false}"
+                           }, {
+                              "settingName": "hostedPaymentCustomerOptions",
+                              "settingValue": "{\"showEmail\": true, \"requiredEmail\": true, \"addPaymentProfile\": true}"
+                           }, {
+                              "settingName": "hostedPaymentOrderOptions",
+                              "settingValue": "{\"show\": true, \"merchantName\": \"G and S Questions Inc.\"}"
+                           }, {
+                              "settingName": "hostedPaymentIFrameCommunicatorUrl",
+                              "settingValue": "{\"url\": \"https://jbokenko-tem.github.io/authorizenet\"}"
+                           }]
+                        }
+                     }
+                  }
+               $.ajax({
+                  'url': url_base,
+                  'type': 'POST',
+                  'content-Type': 'x-www-form-urlencoded',
+                  'dataType': 'json',
+                  'data': JSON.stringify(requestBody),
+                  'success': function (result) {
+                     $("#token").val(result.token);
+                  }
+               });
+            }
+   </script>
 
-document.addEventListener("message", myFunction);
+   <script type="text/javascript">
+
+      (function () {
+         if (!window.AuthorizeNetIFrame) window.AuthorizeNetIFrame = {};
+         AuthorizeNetIFrame.onReceiveCommunication = function (querystr) {
+            var params = parseQueryString(querystr);
+            switch (params["action"]) {
+               case "successfulSave":
+                  break;
+               case "cancel":
+                  break;
+               case "resizeWindow":
+                  var w = parseInt(params["width"]);
+                  var h = parseInt(params["height"]);
+                  var ifrm = document.getElementById("add_payment");
+                  ifrm.style.width = w.toString() + "px";
+                  ifrm.style.height = h.toString() + "px";
+                  break;
+               case "transactResponse":
+                  var ifrm = document.getElementById("add_payment");
+                  ifrm.style.display = 'none';
+            }
+         };
+
+         function parseQueryString(str) {
+            var vars = [];
+            var arr = str.split('&');
+            var pair;
+            for (var i = 0; i < arr.length; i++) {
+               pair = arr[i].split('=');
+               vars.push(pair[0]);
+               vars[pair[0]] = unescape(pair[1]);
+            }
+            return vars;
+         }
+      }());
+   </script>
+   <script type="text/javascript">
+
+      $(function () {
+
+         $("#btnOpenAuthorizeNetIFrame").click(function () {
+            $("#add_payment").show();
+            $("#send_token").attr({ "action": "https://test.authorize.net/payment/payment", "target": "add_payment" }).submit();
+            $(window).scrollTop($('#add_payment').offset().top - 50);
+         });
+
+      });
 
 
+   </script>
 
-function myFunction () {
-	alert ("inside myFunction")
-	}
+   <script type="text/javascript">
+      //<![CDATA[
+      function callParentFunction(str) {
+         if (str && str.length > 0
+            && window.parent
+            && window.parent.parent
+            && window.parent.parent.AuthorizeNetIFrame
+            && window.parent.parent.AuthorizeNetIFrame.onReceiveCommunication) {
+            // Errors indicate a mismatch in domain between the page containing the iframe and this page.
+            window.parent.parent.AuthorizeNetIFrame.onReceiveCommunication(str);
+         }
+      }
 
+      function receiveMessage(event) {
+         if (event && event.data) {
+            callParentFunction(event.data);
+         }
+      }
 
-				function getToken() {
-					var url_base = 'https://apitest.authorize.net/xml/v1/request.api'
-					var requestBody =
-						{
-							"getHostedPaymentPageRequest": {
-								"merchantAuthentication": {
-									"name": "9g65X6Eq4Ux",
-									"transactionKey": "4294amD6G2s3RtHQ"
-								},
-								"transactionRequest": {
-									"transactionType": "authCaptureTransaction",
-									"amount": "250.00",
-									"profile": {
-										"customerProfileId": "123456789"
-									},
-									"customer": {
-										"email": "ellen@mail.com"
-									},
-									"billTo": {
-										"firstName": "Ellen",
-										"lastName": "Johnson",
-										"company": "Souveniropolis",
-										"address": "14 Main Street",
-										"city": "Pecan Springs",
-										"state": "TX",
-										"zip": "44628",
-										"country": "USA"
-									}
-								},
-								"hostedPaymentSettings": {
-									"setting": [{
-										"settingName": "hostedPaymentReturnOptions",
-                                        "settingValue": "{\"showReceipt\": false, \"url\": \"https://jbokenko-tem.github.io/authorizenet\", \"urlText\": \"Continue\", \"cancelUrl\": \"https://jbokenko-tem.github.io/authorizenet\", \"cancelUrlText\": \"Cancel\"}"
-									}, {
-										"settingName": "hostedPaymentButtonOptions",
-										"settingValue": "{\"text\": \"Pay\"}"
-									}, {
-										"settingName": "hostedPaymentStyleOptions",
-										"settingValue": "{\"bgColor\": \"blue\"}"
-									}, {
-										"settingName": "hostedPaymentPaymentOptions",
-										"settingValue": "{\"cardCodeRequired\": false, \"showCreditCard\": true, \"showBankAccount\": true}"
-									}, {
-										"settingName": "hostedPaymentSecurityOptions",
-										"settingValue": "{\"captcha\": false}"
-									}, {
-										"settingName": "hostedPaymentShippingAddressOptions",
-										"settingValue": "{\"show\": false, \"required\": false}"
-									}, {
-										"settingName": "hostedPaymentBillingAddressOptions",
-										"settingValue": "{\"show\": true, \"required\": false}"
-									}, {
-										"settingName": "hostedPaymentCustomerOptions",
-										"settingValue": "{\"showEmail\": true, \"requiredEmail\": true, \"addPaymentProfile\": true}"
-									}, {
-										"settingName": "hostedPaymentOrderOptions",
-										"settingValue": "{\"show\": true, \"merchantName\": \"G and S Questions Inc.\"}"
-									}, {
-										"settingName": "hostedPaymentIFrameCommunicatorUrl",
-										"settingValue": "{\"url\": \"https://jbokenko-tem.github.io/authorizenet\"}"
-									}]
-								}
-							}
-						}
-					$.ajax({
-						'url': url_base,
-						'type': 'POST',
-						'content-Type': 'x-www-form-urlencoded',
-						'dataType': 'json',
-						'data': JSON.stringify(requestBody),
-						'success': function (result) {
-							$("#token").val(result.token);
-						}
-					});
-				}
-				
-				
+      if (window.addEventListener) {
+         window.addEventListener("message", receiveMessage, false);
+      } else if (window.attachEvent) {
+         window.attachEvent("onmessage", receiveMessage);
+      }
 
-</script>
+      if (window.location.hash && window.location.hash.length > 1) {
+         callParentFunction(window.location.hash.substring(1));
+      }
+      //]]/>
+   </script>
+</head>
 
-
-
-​
-​</head>
 <body onload="getToken()">
    <style>
       .button {
@@ -129,11 +185,12 @@ function myFunction () {
          /* Safari */
          transition-duration: 0.4s;
       }
-​
+
       .button-1 {
          box-shadow: 0 8px 16px 0 rgba(19, 128, 33, 0.61), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
       }
    </style>
+
 
    <div>
       <center>
@@ -141,8 +198,8 @@ function myFunction () {
       </center>
    </div>
    <center>
-      <div id="iframe_holder" class="center-block" height="444" style="width:90%;max-width: 1000px">
-         <iframe id="add_payment" class="embed-responsive-item panel" name="add_payment" height="777" width="100%" frameborder="1" scrolling="yes"
+      <div id="iframe_holder" class="center-block" style="width:90%;max-width: 1000px">
+         <iframe id="add_payment" class="embed-responsive-item panel" name="add_payment" width="100%" frameborder="0" scrolling="no"
           hidden="true">
          </iframe>
       </div>
@@ -152,13 +209,6 @@ function myFunction () {
    </form>
 
 
-
-<!--
-<p>If you click on the "Hide" button, I will disappear.</p>
-
-<button id="hide">Hide</button>
-<button id="show">Show</button>
--->
-
 </body>
+
 </html>
